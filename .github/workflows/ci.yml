@@ -21,4 +21,10 @@ jobs:
       - run: cargo clippy --locked --all-targets -- -D warnings
       - run: cargo test --locked
       - run: cargo build --locked
-      - run: python3 scripts/demo.py
+      - name: Test MQTT recovery
+        run: |
+          # Ubuntu confines Mosquitto config reads to /etc/mosquitto.
+          demo_tmp=$(sudo mktemp -d /etc/mosquitto/conf.d/iot-gateway-ci.XXXXXX)
+          trap "sudo rmdir -- \"$demo_tmp\"" EXIT
+          sudo chown "$(id -u):$(id -g)" "$demo_tmp"
+          TMPDIR="$demo_tmp" python3 scripts/demo.py
