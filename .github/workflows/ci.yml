@@ -1,0 +1,24 @@
+name: CI
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Rust and Mosquitto
+        run: |
+          rustup default stable
+          rustup component add rustfmt clippy
+          sudo apt-get update
+          sudo apt-get install -y mosquitto
+      - run: cargo fmt --check
+      - run: cargo clippy --locked --all-targets -- -D warnings
+      - run: cargo test --locked
+      - run: cargo build --locked
+      - run: python3 scripts/demo.py
